@@ -1,11 +1,12 @@
+from xml.dom.minidom import Element
 import snscrape.modules.twitter as sntwitter
 import pandas as pd
 import numpy as np
 from collections import Counter
 
-querry = "(from:@EvilAFM)"
+querry = "(from:@elonmusk)"
 tweets = [] 
-limit = 50
+limit = 500
 
 for tweet in sntwitter.TwitterSearchScraper(querry).get_items():
     if len (tweets) == limit : break
@@ -19,8 +20,11 @@ for t in df["Tweet"]:
     tweet_longer +=t 
 
 count = Counter(tweet_longer.split(" "))
-short_words_index = np.where( np.array( [ len(text) for text in list(count) ] ) <= 3)
-
+lista, diccionario = list(count) , dict(count) 
+index_short_element = np.where( (np.array ([len(element) for element in lista] ) )<=3 )[0]
+for index in index_short_element :
+    diccionario.pop( lista[index] )
+count = Counter(diccionario).most_common(int(limit/10))
 
 
 
