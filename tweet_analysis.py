@@ -64,6 +64,12 @@ class Tweet_analysis() :
         copy_df["Date"] = [ date(d.year , d.month , d.day ) for d in copy_df["Date"] ]
         tweets_per_day = copy_df.groupby("Date").count()["Tweet"]
         return tweets_per_day[-1-last_n_days : -1]
+    
+    def averague_tweets(self,n_days = 30, r_n = 3):
+        tweets = 0
+        for i in self.tweets_per_day(n_days) : 
+            tweets +=i
+        return round(tweets/n_days,r_n)
 
 
 
@@ -82,8 +88,7 @@ class Tweet_analysis() :
 #df["Date"] = [date(d.year , d.month , d.day ) for d in df["Date"]]
 #print( df["Date"] )
 User = Tweet_analysis(querry)
-info = User.geneal_info
-print(User.tweets_per_day())
+print(User.averague_tweets())
 
 
 
