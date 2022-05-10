@@ -1,22 +1,23 @@
 #Useful libraries we need.
-from datetime import date, datetime
+from datetime import date
 import snscrape.modules.twitter as sntwitter
 import pandas as pd
 import numpy as np
 from collections import Counter
 from nltk.corpus import stopwords
 from nltk.tokenize import sent_tokenize, word_tokenize
-#nltk.download('stopwords')
+from nltk import download
+#download('stopwords')
 
 
 extra_stop_words = ["no","si","así","hacer","cosas","ver","voy","va","puedes","luego",
                     "ser","hecho","hace","tener","sé","mejor","dicho"]
 stopWords = stopwords.words("spanish") + extra_stop_words
 
-#Select twitter querry we want to obtain tweets.
+#Select twitter querry we want to obtain tweets
 querry = "(from:@titodeskanar)"
 #If enough tweets are found program will collect at max limit number.
-limit = 500
+limit = 50
 
 
 
@@ -46,8 +47,8 @@ class Tweet_analysis() :
     def common_words(self, number = 10):
         tweet_longer = ""
         f_tweet_longer = []
-        for t in df["Tweet"]: tweet_longer +=t
-        tweet_longer=tweet_longer.lower()
+        for t in self.geneal_info["Tweet"]: tweet_longer +=t
+        tweet_longer = tweet_longer.lower()
         count = Counter(tweet_longer.split(" "))
         lista, diccionario = list(count) , dict(count) 
         for w in lista :
@@ -60,18 +61,9 @@ class Tweet_analysis() :
 #Count tweets per day
     def tweets_per_day(self, last_n_days = 30 ) :
         copy_df = self.geneal_info
-        copy_df["Date"] = [fechas.to_pydatetime().date() for fechas in self.geneal_info["Date"]]
+        copy_df["Date"] = [ date(d.year , d.month , d.day ) for d in copy_df["Date"] ]
         tweets_per_day = copy_df.groupby("Date").count()["Tweet"]
-        return tweets_per_day[0:last_n_days]
-
-
-
-
-tweets = []
-for tweet in sntwitter.TwitterSearchScraper(querry).get_items():
-    if len (tweets) == limit : break
-    else : tweets.append([ tweet.date, tweet.user , tweet.content ])
-df = pd.DataFrame( tweets, columns=["Date", "User", "Tweet"] )
+        return tweets_per_day[-1-last_n_days : -1]
 
 
 
@@ -80,13 +72,29 @@ df = pd.DataFrame( tweets, columns=["Date", "User", "Tweet"] )
 
 
 
+#tweets = []
+#Here we get the tweet objects and append them to the list
+#for tweet in sntwitter.TwitterSearchScraper(querry).get_items():
+#    if len (tweets) == limit : break
+#Here we collect the date, user and content from the tweet
+#    else : tweets.append([ tweet.date, tweet.user , tweet.content ])
+#df = pd.DataFrame( tweets, columns=["Date", "User", "Tweet"] )
+#df["Date"] = [date(d.year , d.month , d.day ) for d in df["Date"]]
+#print( df["Date"] )
+User = Tweet_analysis(querry)
+info = User.geneal_info
+print(User.tweets_per_day())
 
 
 
 
 
-User = Tweet_analysis(querry=querry)
-print(User.common_words(20))
+
+
+
+
+
+
 
 
 
