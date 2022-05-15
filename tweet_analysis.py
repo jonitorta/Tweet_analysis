@@ -6,17 +6,18 @@ import numpy as np
 from collections import Counter
 from nltk.corpus import stopwords
 from nltk.tokenize import sent_tokenize, word_tokenize
+from config_file import options
 #nltk.download('stopwords')
 
 
-extra_stop_words = ["no","si","así","hacer","cosas","ver","voy","va","puedes","luego",
-                    "ser","hecho","hace","tener","sé","mejor","dicho"]
-stopWords = stopwords.words("spanish") + extra_stop_words
+extra_stop_words = options["extra stop words spanish"]
+idiom = options["idiom"]
+stopWords = stopwords.words(idiom) + extra_stop_words
 
 #Select twitter querry we want to obtain tweets.
-querry = "Leon guanajuato"
+querry = options["querry"]
 #If enough tweets are found program will collect at max limit number.
-limit = 50
+limit = options["limit"]
 
 
 
@@ -91,18 +92,10 @@ class Tweet_analysis() :
 
 
 
-
-#tweets = []
-#Here we get the tweet objects and append them to the list
-#for tweet in sntwitter.TwitterSearchScraper(querry).get_items():
-#    if len (tweets) == limit : break
-#Here we collect the date, user and content from the tweet
-#    else : tweets.append([ tweet.date, tweet.user , tweet.content ])
-#df = pd.DataFrame( tweets, columns=["Date", "User", "Tweet"] )
-#df["Date"] = [date(d.year , d.month , d.day ) for d in df["Date"]]
-#print( df["Date"] )
-User = Tweet_analysis(querry,limit = limit,user_info=True)
-print(User.tweets_per_username)
+if __name__ == "__main__":
+    User = Tweet_analysis(querry,limit = limit,user_info=options["user info"])
+    print(options)
+    
 
 
 
