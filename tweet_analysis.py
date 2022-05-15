@@ -25,7 +25,7 @@ limit = 50
 #Here we define an object to make easy analyse multiple users or querrys.
 class Tweet_analysis() : 
     #We ask for the querre and tweet limit
-    def __init__(self, querry, limit = 500):
+    def __init__(self, querry, limit = 500,user = False):
         self.querry = querry
         #We create a list for the tweet object
         tweets = []
@@ -33,7 +33,13 @@ class Tweet_analysis() :
         for tweet in sntwitter.TwitterSearchScraper(querry).get_items():
             if len (tweets) == limit : break
             #Here we collect the date, user and content from the tweet
-            else : tweets.append([ tweet.date, tweet.username , tweet.content ])
+            else : tweets.append([ tweet.date, tweet.user.username , tweet.content ])
+        if user :
+            self.user_name = tweets[0][1]
+            self.user_info = sntwitter.TwitterUserScraper(username=self.user_name)._get_entity()
+            self.user_info_index = {"username":0, "id":1, "description":3,"verified":6,
+                                    "created":7, "followersCout":8, "friendsCount":9,
+                                    "favCount":11, "location":14  }
         df = pd.DataFrame( tweets, columns=["Date", "User", "Tweet"] )
         self.content = df["Tweet"]
         self.dates = df["Date"]
@@ -86,7 +92,8 @@ class Tweet_analysis() :
 #df = pd.DataFrame( tweets, columns=["Date", "User", "Tweet"] )
 #df["Date"] = [date(d.year , d.month , d.day ) for d in df["Date"]]
 #print( df["Date"] )
-User = Tweet_analysis(querry).geneal_info
+User = Tweet_analysis(querry,user=True).user_info.followersCount
+print(User)
 
 
 
