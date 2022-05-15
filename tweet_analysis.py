@@ -1,20 +1,19 @@
 #Useful libraries we need.
-from datetime import date
+from datetime import date, datetime
 import snscrape.modules.twitter as sntwitter
 import pandas as pd
 import numpy as np
 from collections import Counter
 from nltk.corpus import stopwords
 from nltk.tokenize import sent_tokenize, word_tokenize
-from nltk import download
-#download('stopwords')
+#nltk.download('stopwords')
 
 
 extra_stop_words = ["no","si","así","hacer","cosas","ver","voy","va","puedes","luego",
                     "ser","hecho","hace","tener","sé","mejor","dicho"]
 stopWords = stopwords.words("spanish") + extra_stop_words
 
-#Select twitter querry we want to obtain tweets
+#Select twitter querry we want to obtain tweets.
 querry = "(from:@titodeskanar)"
 #If enough tweets are found program will collect at max limit number.
 limit = 50
@@ -34,7 +33,7 @@ class Tweet_analysis() :
         for tweet in sntwitter.TwitterSearchScraper(querry).get_items():
             if len (tweets) == limit : break
             #Here we collect the date, user and content from the tweet
-            else : tweets.append([ tweet.date, tweet.user , tweet.content ])
+            else : tweets.append([ tweet.date, tweet.username , tweet.content ])
         df = pd.DataFrame( tweets, columns=["Date", "User", "Tweet"] )
         self.content = df["Tweet"]
         self.dates = df["Date"]
@@ -87,8 +86,8 @@ class Tweet_analysis() :
 #df = pd.DataFrame( tweets, columns=["Date", "User", "Tweet"] )
 #df["Date"] = [date(d.year , d.month , d.day ) for d in df["Date"]]
 #print( df["Date"] )
-User = Tweet_analysis(querry)
-print(User.averague_tweets())
+User = Tweet_analysis(querry).geneal_info
+
 
 
 
