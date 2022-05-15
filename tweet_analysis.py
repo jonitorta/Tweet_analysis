@@ -1,6 +1,5 @@
 #Useful libraries we need.
 from datetime import date, datetime
-from unicodedata import name
 import snscrape.modules.twitter as sntwitter
 import pandas as pd
 import numpy as np
@@ -15,7 +14,7 @@ extra_stop_words = ["no","si","así","hacer","cosas","ver","voy","va","puedes","
 stopWords = stopwords.words("spanish") + extra_stop_words
 
 #Select twitter querry we want to obtain tweets.
-querry = "(from:@titodeskanar)"
+querry = "Leon guanajuato"
 #If enough tweets are found program will collect at max limit number.
 limit = 50
 
@@ -54,6 +53,7 @@ class Tweet_analysis() :
         self.dates = df["Date"]
         self.info = df["User"]
         self.geneal_info = df
+        self.tweets_per_username = self.geneal_info.groupby("User").count()["Tweet"]
     
     
     #Method to obtain # of most common words from the tweets of the querry, len_filter
@@ -101,8 +101,8 @@ class Tweet_analysis() :
 #df = pd.DataFrame( tweets, columns=["Date", "User", "Tweet"] )
 #df["Date"] = [date(d.year , d.month , d.day ) for d in df["Date"]]
 #print( df["Date"] )
-User = Tweet_analysis(querry,user_info=True).geneal_info
-print(User)
+User = Tweet_analysis(querry,limit = limit,user_info=True)
+print(User.tweets_per_username)
 
 
 
