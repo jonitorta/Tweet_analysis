@@ -34,17 +34,22 @@ class Tweet_analysis() :
         for tweet in sntwitter.TwitterSearchScraper(querry).get_items():
             if len (tweets) == limit : break
             #Here we collect the date, user and content from the tweet
-            else : tweets.append([ tweet.date, tweet.user.username , tweet.content ])
+            else : tweets.append([ tweet.date, tweet.user.username , tweet.content,
+                                tweet.replyCount, tweet.retweetCount, tweet.likeCount, tweet.quoteCount ])
+            #If user info is true three extra attributes are created
+            #1) unique_user_name is a list of unique user names in the querry
+            #2)user info is a list, every instance of the list containt general info about each unique user
+            #3) user info attributes is a list of attributes we can call for each user_info like description or followersCount
         if user_info :
             unique_user_name = set( [t[1] for t in tweets] )
             self.unique_user_name =  [name for name in unique_user_name  ]
-            #self.user_info = [sntwitter.TwitterUserScraper(username=user)._get_entity() for user in self.unique_user_name]
+            self.user_info = [sntwitter.TwitterUserScraper(username=name)._get_entity() for name in self.unique_user_name]
             self.user_info_attributes = ["username", "id", "displayname", "description",
 			"rawDescription", "descriptionUrls", "created", "followersCount", "friendsCount", 
 			"statusesCount", "favouritesCount", "listedCount", "mediaCount","location",
 			"protected", "linkUrl","linkTcourl", "profileImageUrl", 
 			"profileBannerUrl", "label"]
-        df = pd.DataFrame( tweets, columns=["Date", "User", "Tweet"] )
+        df = pd.DataFrame( tweets, columns=["Date", "User", "Tweet","Reply count","Retweet count","Like count","Quote count"] )
         self.content = df["Tweet"]
         self.dates = df["Date"]
         self.info = df["User"]
@@ -74,11 +79,11 @@ class Tweet_analysis() :
         tweets_per_day = copy_df.groupby("Date").count()["Tweet"]
         return tweets_per_day[-1-last_n_days : -1]
     
-    def averague_tweets(self,n_days = 30, r_n = 3):
+    def averague_tweets(self,n_days = 30, round_number = 3):
         tweets = 0
         for i in self.tweets_per_day(n_days) : 
             tweets +=i
-        return round(tweets/n_days,r_n)
+        return round(tweets/n_days,round_number)
 
 
 
@@ -96,7 +101,7 @@ class Tweet_analysis() :
 #df = pd.DataFrame( tweets, columns=["Date", "User", "Tweet"] )
 #df["Date"] = [date(d.year , d.month , d.day ) for d in df["Date"]]
 #print( df["Date"] )
-User = Tweet_analysis(querry,user_info=True).unique_user_name
+User = Tweet_analysis(querry,user_info=True).geneal_info
 print(User)
 
 
