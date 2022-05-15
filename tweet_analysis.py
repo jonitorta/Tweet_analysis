@@ -1,5 +1,6 @@
 #Useful libraries we need.
 from datetime import date, datetime
+from unicodedata import name
 import snscrape.modules.twitter as sntwitter
 import pandas as pd
 import numpy as np
@@ -25,7 +26,7 @@ limit = 50
 #Here we define an object to make easy analyse multiple users or querrys.
 class Tweet_analysis() : 
     #We ask for the querre and tweet limit
-    def __init__(self, querry, limit = 500,user = False):
+    def __init__(self, querry, limit = 500,user_info = False):
         self.querry = querry
         #We create a list for the tweet object
         tweets = []
@@ -34,12 +35,15 @@ class Tweet_analysis() :
             if len (tweets) == limit : break
             #Here we collect the date, user and content from the tweet
             else : tweets.append([ tweet.date, tweet.user.username , tweet.content ])
-        if user :
-            self.user_name = tweets[0][1]
-            self.user_info = sntwitter.TwitterUserScraper(username=self.user_name)._get_entity()
-            self.user_info_index = {"username":0, "id":1, "description":3,"verified":6,
-                                    "created":7, "followersCout":8, "friendsCount":9,
-                                    "favCount":11, "location":14  }
+        if user_info :
+            unique_user_name = set( [t[1] for t in tweets] )
+            self.unique_user_name =  [name for name in unique_user_name  ]
+            #self.user_info = [sntwitter.TwitterUserScraper(username=user)._get_entity() for user in self.unique_user_name]
+            self.user_info_attributes = ["username", "id", "displayname", "description",
+			"rawDescription", "descriptionUrls", "created", "followersCount", "friendsCount", 
+			"statusesCount", "favouritesCount", "listedCount", "mediaCount","location",
+			"protected", "linkUrl","linkTcourl", "profileImageUrl", 
+			"profileBannerUrl", "label"]
         df = pd.DataFrame( tweets, columns=["Date", "User", "Tweet"] )
         self.content = df["Tweet"]
         self.dates = df["Date"]
@@ -92,8 +96,9 @@ class Tweet_analysis() :
 #df = pd.DataFrame( tweets, columns=["Date", "User", "Tweet"] )
 #df["Date"] = [date(d.year , d.month , d.day ) for d in df["Date"]]
 #print( df["Date"] )
-User = Tweet_analysis(querry,user=True).user_info.followersCount
+User = Tweet_analysis(querry,user_info=True).unique_user_name
 print(User)
+
 
 
 
