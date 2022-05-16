@@ -94,7 +94,7 @@ class Tweet_analysis() :
 
 if __name__ == "__main__":
     User = Tweet_analysis(querry,limit = limit,user_info=options["user info"])
-    print(options)
+    
     
 
 
@@ -112,4 +112,3 @@ if __name__ == "__main__":
 
 
 
-pass
