@@ -25,7 +25,7 @@ stopWords = stopwords.words(idiom) + extra_stop_words
 class Tweet_analysis() : 
     #We ask for the querre and tweet limit
     def __init__(self, querry, user_info_attributes="No info",limit = 500, user_info = False,
-                save_data=False,name="saved_data.pkl"):
+                save_data=False,file_name="saved_data.pkl"):
         self.querry = querry
         #We create a list for the tweet object
         tweets = []
@@ -51,7 +51,7 @@ class Tweet_analysis() :
         self.info = df["User"]
         self.geneal_info = df
         self.tweets_per_username = self.geneal_info.groupby("User").count()["Tweet"]
-        if save_data : self.geneal_info.to_pickle(name)
+        if save_data : self.geneal_info.to_pickle(file_name)
     
     
     #Method to obtain # of most common words from the tweets of the querry, len_filter
