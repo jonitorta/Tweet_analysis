@@ -79,7 +79,7 @@ class Tweet_analysis() :
     def tweets_per_interval_of_time(self, last_n_days = 30, interval = "day" ) :
         copy_df = self.geneal_info
         tweets_per_day = copy_df.groupby("Date").count()["Tweet"]
-        return tweets_per_day[-1-last_n_days : -1]
+        return tweets_per_day[-1-last_n_days : -1].sort_values()
     
     def averague_tweets(self,n_days = 30, round_number = 3):
         tweets = 0
