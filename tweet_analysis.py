@@ -1,11 +1,17 @@
 from tweet_scrapper import Tweet_analysis
 from config_file import options
+from os import path
 
-
-
-#Select twitter querry we want to obtain tweets.
 querry = options["querry"]
-#If enough tweets are found program will collect at max limit number.
 limit = options["limit"]
+user_info = options["user info"]
 user_info_attributes = options["user info attributes"]
+save_status = options["save status"]
+file_name = options["file name"]
 
+if not path.exists(file_name):
+    get_data = Tweet_analysis( querry= querry, limit=limit,
+                           user_info=user_info, 
+                           user_info_attributes= user_info_attributes,
+                           save_data=save_status,
+                           file_name= file_name)
