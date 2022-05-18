@@ -14,7 +14,11 @@ options = {
 			"rawDescription", "descriptionUrls", "created", "followersCount", "friendsCount", 
 			"statusesCount", "favouritesCount", "listedCount", "mediaCount","location",
 			"protected", "linkUrl","linkTcourl", "profileImageUrl", 
-			"profileBannerUrl", "label"]
+			"profileBannerUrl", "label"],
+    "save status" : True,
+
+    "file name" : "tweets_info.pkl"
+
 
 
 }
