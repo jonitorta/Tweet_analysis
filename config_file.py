@@ -1,6 +1,6 @@
 options = {
     "idiom": "spanish",
-    "querry": "Leon Gto",
+    "querry": "(from:@lopezobrador_)",
     "limit": 60,
     "user info" : False,
     "extra stop words spanish" :  ["no","si","así","hacer","cosas","ver","voy","va","puedes","luego",

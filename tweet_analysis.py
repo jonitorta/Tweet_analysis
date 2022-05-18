@@ -7,6 +7,7 @@ from collections import Counter
 from nltk.corpus import stopwords
 from nltk.tokenize import sent_tokenize, word_tokenize
 from config_file import options
+
 #nltk.download('stopwords')
 
 
@@ -26,7 +27,7 @@ limit = options["limit"]
 #Here we define an object to make easy analyse multiple users or querrys.
 class Tweet_analysis() : 
     #We ask for the querre and tweet limit
-    def __init__(self, querry, limit = 500,user_info = False):
+    def __init__(self, querry, limit = 500, user_info = False):
         self.querry = querry
         #We create a list for the tweet object
         tweets = []
@@ -50,6 +51,7 @@ class Tweet_analysis() :
 			"protected", "linkUrl","linkTcourl", "profileImageUrl", 
 			"profileBannerUrl", "label"]
         df = pd.DataFrame( tweets, columns=["Date", "User", "Tweet","Reply count","Retweet count","Like count","Quote count"] )
+        df["Date"] = [ date(d.year , d.month , d.day ) for d in df["Date"] ]
         self.content = df["Tweet"]
         self.dates = df["Date"]
         self.info = df["User"]
@@ -74,9 +76,8 @@ class Tweet_analysis() :
         return common_words
 
 #Count tweets per day
-    def tweets_per_day(self, last_n_days = 30 ) :
+    def tweets_per_interval_of_time(self, last_n_days = 30, interval = "day" ) :
         copy_df = self.geneal_info
-        copy_df["Date"] = [ date(d.year , d.month , d.day ) for d in copy_df["Date"] ]
         tweets_per_day = copy_df.groupby("Date").count()["Tweet"]
         return tweets_per_day[-1-last_n_days : -1]
     
@@ -93,9 +94,11 @@ class Tweet_analysis() :
 
 
 if __name__ == "__main__":
-    User = Tweet_analysis(querry,limit = limit,user_info=options["user info"])
+    user = Tweet_analysis(querry , limit = limit, user_info=options["user info"])
+    tweets_per_day = user.tweets_per_interval_of_time()
+    tweets_per_month = user.tweets_per_interval_of_time(interval="month")
+    tweets_per_year = user.tweets_per_interval_of_time(interval = "year")
     
-    
 
 
 
@@ -112,3 +115,4 @@ if __name__ == "__main__":
 
 
 
+pass
