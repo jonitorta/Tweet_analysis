@@ -34,7 +34,11 @@ class Tweet_analysis() :
             if len (tweets) == limit : break
             #Here we collect the date, user and content from the tweet
             else : tweets.append([ tweet.date, tweet.user.username , tweet.content,
-                                tweet.replyCount, tweet.retweetCount, tweet.likeCount, tweet.quoteCount ])
+                                tweet.replyCount, tweet.retweetCount, tweet.likeCount, tweet.quoteCount,
+                                sntwitter.TwitterUserScraper(username=tweet.user.username)._get_entity().followersCount,
+                                sntwitter.TwitterUserScraper(username=tweet.user.username)._get_entity().friendsCount,
+                                sntwitter.TwitterUserScraper(username=tweet.user.username)._get_entity().created,
+                                sntwitter.TwitterUserScraper(username=tweet.user.username)._get_entity().mediaCount      ])
             #If user info is true three extra attributes are created
             #1) unique_user_name is a list of unique user names in the querry
             #2)user info is a list, every instance of the list containt general info about each unique user
@@ -44,7 +48,9 @@ class Tweet_analysis() :
             self.unique_user_name =  [name for name in unique_user_name  ]
             self.user_info = [sntwitter.TwitterUserScraper(username=name)._get_entity() for name in self.unique_user_name]
             self.user_info_attributes = user_info_attributes
-        df = pd.DataFrame( tweets, columns=["Date", "User", "Tweet","Reply count","Retweet count","Like count","Quote count"] )
+        df = pd.DataFrame( tweets, columns=[ "Date", "User", "Tweet","Reply count","Retweet count",
+                                             "Like count","Quote count","Account followers","Account friends",
+                                             "Account creation", "Account media"       ])
         df["Date"] = [ date(d.year , d.month , d.day ) for d in df["Date"] ]
         self.content = df["Tweet"]
         self.dates = df["Date"]
