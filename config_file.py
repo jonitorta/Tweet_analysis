@@ -17,7 +17,9 @@ options = {
 			"profileBannerUrl", "label"],
     "save status" : True,
 
-    "file name" : "tweets_info.pkl"
+    "file name" : "tweets_info.pkl",
+    
+    "commond_word_file_name":"text_file.txt"
 
 
 
