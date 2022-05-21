@@ -24,8 +24,7 @@ stopWords = stopwords.words(idiom) + extra_stop_words
 #Here we define an object to make easy analyse multiple users or querrys.
 class Tweet_analysis() : 
     #We ask for the querre and tweet limit
-    def __init__(self, querry, user_info_attributes="No info",limit = 500, user_info = False,
-                save_data=False,file_name="saved_data.pkl"):
+    def __init__(self, querry,limit = 500, save_data=False , file_name="saved_data.pkl" ):
         self.querry = querry
         #We create a list for the tweet object
         tweets = []
@@ -39,16 +38,7 @@ class Tweet_analysis() :
                                 sntwitter.TwitterUserScraper(username=tweet.user.username)._get_entity().friendsCount,
                                 sntwitter.TwitterUserScraper(username=tweet.user.username)._get_entity().created,
                                 sntwitter.TwitterUserScraper(username=tweet.user.username)._get_entity().mediaCount      ])
-            #If user info is true three extra attributes are created
-            #1) unique_user_name is a list of unique user names in the querry
-            #2)user info is a list, every instance of the list containt general info about each unique user
-            #3) user info attributes is a list of attributes we can call for each user_info like description or followersCount
-        if user_info :
-            unique_user_name = set( [t[1] for t in tweets] )
-            self.unique_user_name =  [name for name in unique_user_name  ]
-            self.user_info = [sntwitter.TwitterUserScraper(username=name)._get_entity() for name in self.unique_user_name]
-            self.user_info_attributes = user_info_attributes
-        df = pd.DataFrame( tweets, columns=[ "Date", "User", "Tweet","Reply count","Retweet count",
+            df = pd.DataFrame( tweets, columns=[ "Date", "User", "Tweet","Reply count","Retweet count",
                                              "Like count","Quote count","Account followers","Account friends",
                                              "Account creation", "Account media"       ])
         df["Date"] = [ date(d.year , d.month , d.day ) for d in df["Date"] ]
