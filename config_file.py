@@ -3,7 +3,7 @@ options = {
     
     "querry": "medicos, mexico lang:es",
     
-    "limit": 10000,
+    "limit": 10,
     
     "user info" : False,
     
