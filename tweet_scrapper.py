@@ -40,17 +40,21 @@ class Tweet_analysis() :
             if len (tweets) == self.limit : break
             #Here we collect the date, user and content from the tweet
             else : 
-                try:    
-                    followers = sntwitter.TwitterUserScraper(username=tweet.user.username)._get_entity().followersCount
-                    friends = sntwitter.TwitterUserScraper(username=tweet.user.username)._get_entity().friendsCount
-                    created = sntwitter.TwitterUserScraper(username=tweet.user.username)._get_entity().created
-                    media_count = sntwitter.TwitterUserScraper(username=tweet.user.username)._get_entity().mediaCount
-                except KeyError :
-                    followers, friends , created , media_count = None,None,None,None
-                tweets.append([ tweet.date, tweet.user.username , tweet.content,
+                try:
+                    user_info = sntwitter.TwitterUserScraper(username=tweet.user.username)._get_entity()
+                except KeyError : 
+                    user_info = None
+                
+                if user_info is None :    
+                    tweets.append([ tweet.date, tweet.user.username , tweet.content,
                                 tweet.replyCount, tweet.retweetCount, tweet.likeCount, tweet.quoteCount,
-                                followers, friends, created, media_count    ])
-            df = pd.DataFrame( tweets, columns=[ "Date", "User", "Tweet","Reply count","Retweet count",
+                                None, None, None, None   ])
+                else :
+                    tweets.append([ tweet.date, tweet.user.username , tweet.content,
+                                tweet.replyCount, tweet.retweetCount, tweet.likeCount, tweet.quoteCount,
+                                user_info.followersCount, user_info.friendsCount, user_info.created, user_info.mediaCount   ])
+                
+                df = pd.DataFrame( tweets, columns=[ "Date", "User", "Tweet","Reply count","Retweet count",
                                              "Like count","Quote count","Account followers","Account friends",
                                              "Account creation", "Account media"       ])
         df["Date"] = [ date(d.year , d.month , d.day ) for d in df["Date"] ]
@@ -59,25 +63,29 @@ class Tweet_analysis() :
         self.info = df["User"]
         self.geneal_info = df
         self.tweets_per_username = self.geneal_info.groupby("User").count()["Tweet"]
-        if self.save_status : self.geneal_info.to_pickle(self.file_name)
+        self.called = True
+        if self.save_status : 
+            self.geneal_info.to_pickle(self.file_name)
         
     
     
     #Method to obtain # of most common words from the tweets of the querry, len_filter
     #filter the words with less or equal number of letters.
     def common_words(self, number = 10):
-        tweet_longer = ""
-        f_tweet_longer = []
-        for t in self.geneal_info["Tweet"]: tweet_longer +=t
-        tweet_longer = tweet_longer.lower()
-        count = Counter(tweet_longer.split(" "))
-        lista, diccionario = list(count) , dict(count) 
-        for w in lista :
-            if w not in stopWords :
-                f_tweet_longer.append(w)
-        times_word_appear = [diccionario[j] for j in f_tweet_longer]
-        common_words = Counter(dict(zip(f_tweet_longer,times_word_appear  ))).most_common(number)
-        return common_words
+        if self.called :
+            tweet_longer = ""
+            f_tweet_longer = []
+            for t in self.geneal_info["Tweet"]: tweet_longer +=t
+            tweet_longer = tweet_longer.lower()
+            count = Counter(tweet_longer.split(" "))
+            lista, diccionario = list(count) , dict(count) 
+            for w in lista :
+                if w not in stopWords :
+                    f_tweet_longer.append(w)
+            times_word_appear = [diccionario[j] for j in f_tweet_longer]
+            common_words = Counter(dict(zip(f_tweet_longer,times_word_appear  ))).most_common(number)
+            return common_words
+        else : print("No tweets appended call get tweets first.")
 
 #Count tweets per day
     def tweets_per_interval_of_time(self, last_n_days = 30 ) :
