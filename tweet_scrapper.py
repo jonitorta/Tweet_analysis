@@ -1,5 +1,6 @@
 #Useful libraries we need.
 from datetime import date, datetime
+from winreg import QueryReflectionKey
 import snscrape.modules.twitter as sntwitter
 import pandas as pd
 import numpy as np
@@ -23,14 +24,20 @@ stopWords = stopwords.words(idiom) + extra_stop_words
 
 #Here we define an object to make easy analyse multiple users or querrys.
 class Tweet_analysis() : 
-    #We ask for the querre and tweet limit
-    def __init__(self, querry,limit = 500, save_data=False , file_name="saved_data.pkl" ):
+    #We ask for the querry and tweet limit
+    def __init__(self,querry,limit = 500, save_data=False , file_name="saved_data.pkl" ):
         self.querry = querry
+        self.limit = limit
+        self.save_status = save_data
+        self.file_name = file_name
+        
+
+    def get_tweets(self):
         #We create a list for the tweet object
         tweets = []
         #Here we get the tweet objects and append them to the list
-        for tweet in sntwitter.TwitterSearchScraper(querry).get_items():
-            if len (tweets) == limit : break
+        for tweet in sntwitter.TwitterSearchScraper(self.querry).get_items():
+            if len (tweets) == self.limit : break
             #Here we collect the date, user and content from the tweet
             else : 
                 try:    
@@ -52,7 +59,8 @@ class Tweet_analysis() :
         self.info = df["User"]
         self.geneal_info = df
         self.tweets_per_username = self.geneal_info.groupby("User").count()["Tweet"]
-        if save_data : self.geneal_info.to_pickle(file_name)
+        if self.save_status : self.geneal_info.to_pickle(self.file_name)
+        
     
     
     #Method to obtain # of most common words from the tweets of the querry, len_filter
@@ -79,7 +87,7 @@ class Tweet_analysis() :
     
     def averague_tweets(self,n_days = 30, round_number = 3):
         tweets = 0
-        for i in self.tweets_per_day(n_days) : 
+        for i in self.tweets_per_interval_of_time(n_days) : 
             tweets +=i
         return round(tweets/n_days,round_number)
 
