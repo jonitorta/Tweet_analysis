@@ -1,12 +1,10 @@
 #Useful libraries we need.
 from datetime import date, datetime
-from winreg import QueryReflectionKey
 import snscrape.modules.twitter as sntwitter
 import pandas as pd
 import numpy as np
 from collections import Counter
 from nltk.corpus import stopwords
-from nltk.tokenize import sent_tokenize, word_tokenize
 from config_file import options
 
 #nltk.download('stopwords')
@@ -30,6 +28,7 @@ class Tweet_analysis() :
         self.limit = limit
         self.save_status = save_data
         self.file_name = file_name
+        
         
 
     def get_tweets(self):
