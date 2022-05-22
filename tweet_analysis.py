@@ -12,19 +12,19 @@ file_name = options["file name"]
 commond_words_file = options["commond_word_file_name"]
 
 if not path.exists(file_name):
-    get_data = Tweet_analysis(  querry= querry, limit=limit,
+    Tweets = Tweet_analysis(  querry= querry, limit=limit,
                                 save_data=save_status,
                                 file_name= file_name )
+    get_data = Tweets.get_tweets()
     
-    commond_words = get_data.common_words(100)
-    with open (commond_words_file,"w",encoding='utf-8') as f:
-        for words in commond_words : 
-            f.write(str(words)+"\n")
-    
-
 data = pd.read_pickle(file_name)
 data.info()
 tweets_per_user = data.groupby("User").count()["Tweet"].sort_values( ascending = False )
+
+commond_words = get_data.common_words(100)
+with open (commond_words_file,"w",encoding='utf-8') as f:
+    for words in commond_words : 
+        f.write(str(words)+"\n")
 
 
 pass
