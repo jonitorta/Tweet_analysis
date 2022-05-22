@@ -32,12 +32,17 @@ class Tweet_analysis() :
         for tweet in sntwitter.TwitterSearchScraper(querry).get_items():
             if len (tweets) == limit : break
             #Here we collect the date, user and content from the tweet
-            else : tweets.append([ tweet.date, tweet.user.username , tweet.content,
+            else : 
+                try:    
+                    followers = sntwitter.TwitterUserScraper(username=tweet.user.username)._get_entity().followersCount
+                    friends = sntwitter.TwitterUserScraper(username=tweet.user.username)._get_entity().friendsCount
+                    created = sntwitter.TwitterUserScraper(username=tweet.user.username)._get_entity().created
+                    media_count = sntwitter.TwitterUserScraper(username=tweet.user.username)._get_entity().mediaCount
+                except KeyError :
+                    followers, friends , created , media_count = None,None,None,None
+                tweets.append([ tweet.date, tweet.user.username , tweet.content,
                                 tweet.replyCount, tweet.retweetCount, tweet.likeCount, tweet.quoteCount,
-                                sntwitter.TwitterUserScraper(username=tweet.user.username)._get_entity().followersCount,
-                                sntwitter.TwitterUserScraper(username=tweet.user.username)._get_entity().friendsCount,
-                                sntwitter.TwitterUserScraper(username=tweet.user.username)._get_entity().created,
-                                sntwitter.TwitterUserScraper(username=tweet.user.username)._get_entity().mediaCount      ])
+                                followers, friends, created, media_count    ])
             df = pd.DataFrame( tweets, columns=[ "Date", "User", "Tweet","Reply count","Retweet count",
                                              "Like count","Quote count","Account followers","Account friends",
                                              "Account creation", "Account media"       ])
