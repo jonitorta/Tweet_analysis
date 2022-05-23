@@ -47,7 +47,7 @@ class Tweet_analysis() :
                 if user_info is None :    
                     tweets.append([ tweet.date, tweet.user.username , tweet.content,
                                 tweet.replyCount, tweet.retweetCount, tweet.likeCount, tweet.quoteCount,
-                                None, None, None, None   ])
+                                float("NaN"), float("NaN"), float("NaN"), float("NaN")   ])
                 else :
                     tweets.append([ tweet.date, tweet.user.username , tweet.content,
                                 tweet.replyCount, tweet.retweetCount, tweet.likeCount, tweet.quoteCount,
