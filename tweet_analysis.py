@@ -29,6 +29,9 @@ if not path.exists(file_name):
 
 #Creamos nuestro data frame.
 data = pd.read_pickle(file_name)
+data['Account followers'].replace("None", np.nan, inplace=True)
+data.dropna()
+
 data.info()
 
 #Separamos los datos del entrenamiento de los del testeo.
@@ -38,19 +41,21 @@ test_set = data.iloc[int(instances*.8):]
 
 #Veamos como se distribuyen nuestros datos
 resume_data = data.describe()
+
 #Creamos categorias para el número de followers
-print((data["Account followers"]-data["Account followers"].mean() )/data["Account followers"].std())
-data["followers_cat"] = pd.cut( (data["Account followers"]-data["Account followers"].mean() )/data["Account followers"].std() ,
-                                bins = [0., 0.2 ,0.4 ,0.6 ,0.8, np.inf ],
+data["followers_cat"] = pd.cut( data["Account followers"] ,
+                                bins = [0.0, 100. ,1000. ,10000. ,100000. ,np.inf ],
                                 labels = [1, 2, 3, 4, 5 ])
 
+data.dropna(subset=["followers_cat"], inplace=True)
+data = data.reset_index(drop = True )
+data.describe()
 
 #Distribuyamos los datos de manera uniforme segund los seguidores.
-split = StratifiedShuffleSplit(n_splits=5, test_size=0.2, random_state=15 )
-l = split.split(data, data["Account followers"])
-for train_index , test_index in split.split(data, data["Account followers"]):
-    strat_train_set = data.loc[train_index]
-    strat_test_set = data.loc[test_index]
+split = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=25)
+for train_index, test_index in split.split(data, data["followers_cat"]):
+ strat_train_set = data.loc[train_index]
+ strat_test_set = data.loc[test_index]
 
 
 
