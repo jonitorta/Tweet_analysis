@@ -1,3 +1,4 @@
+from email.quoprimime import quote
 import pandas as pd
 import numpy as np
 from tweet_scrapper import Tweet_analysis
@@ -6,29 +7,49 @@ from os import path
 import matplotlib.pyplot as plt
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.base import BaseEstimator, TransformerMixin
+from datetime import datetime, tzinfo
 
-#Definimos el número de índice de las varaibles para el transformador
+#Asignamos el número de índice de las varaibles para el transformador
 tweet_ix, reply_ix, retweet_ix, like_ix, quote_ix, follower_ix, friend_ix, creation_ix = 2, 3, 4, 5, 6, 7, 8, 9 
 #Creamos una clase para hacer atributos nuevos a nuestro data frame
 class CombinedAttributersAdder(BaseEstimator, TransformerMixin):
-    def __init__(self, total_interactions = True, character_len = True, time_plataform = True ):
-        self.total_interactions = total_interactions
-        self.character_len = character_len
-        self.time_plataform = time_plataform
+    def __init__(self, add_total_interactions = True, add_total_words = True, add_time_plataform = True ):
+        self.add_total_interactions = add_total_interactions
+        self.add_total_words = add_total_words
+        self.add_time_plataform = add_time_plataform
     #Declaramos este método para que nuestra clase funcione como un transformador
     def fit(self, X , y = None):
         return self
-
     
+    def transform(self, X, y= None):
+        
+        #En esta parte hacemos la lista con el número total de interacciones
+        if self.add_total_interactions:
+            total_interactions = X[:, reply_ix] + X[:, retweet_ix] + X[:, like_ix] + X[:, quote_ix]
+            new_frame = np.c_[X,total_interactions]
+        #En esta parte contamos el número de palabras y las guardamos ese número en una lista
+        if self.add_total_words :
+            total_words =  []
+            print(len(X[:, tweet_ix]))
+            for tweets_tex in X[:, tweet_ix]:
+                word_list = tweets_tex.split()
+                total_words.append( len(word_list) )
+            new_frame = np.c_[new_frame, total_words]
+            
+            
+        #En esta parte contamos el tiempo en días desde la creación de la cuenta hasta el día de hoy.
+        if self.add_time_plataform:
+            today = datetime.now()
+            creation_date = X[:, creation_ix]
+            days = []
+            for dates in creation_date:
+                time_up = today - dates.replace(tzinfo=None)
+                days.append(time_up.days)
+            new_frame = np.c_[new_frame, days]
+        
+        
 
-
-
-
-
-
-
-
-
+        return new_frame
 
 
 #Tomamos las opciones.
@@ -103,5 +124,12 @@ cleaned_data = strat_train_set.drop("Total interactions", axis = 1)
 Total_interactions = strat_train_set["Total interactions"].copy()
 #Hacemos un data frame con solo valores numéricos.
 num_cleaned_data = cleaned_data.drop(["Date", "User", "Tweet", "Account creation"], axis = 1)
+
+
+
+attr_adder = CombinedAttributersAdder(add_total_interactions=True,add_time_plataform=True,add_total_words=True)
+data_extra_attr = attr_adder.transform(cleaned_data.values)
+
+
 
 pass
