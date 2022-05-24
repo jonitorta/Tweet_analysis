@@ -1,4 +1,3 @@
-from matplotlib.cm import get_cmap
 import pandas as pd
 import numpy as np
 from tweet_scrapper import Tweet_analysis
@@ -6,7 +5,30 @@ from config_file import options
 from os import path
 import matplotlib.pyplot as plt
 from sklearn.model_selection import StratifiedShuffleSplit
-from sklearn.impute import SimpleImputer
+from sklearn.base import BaseEstimator, TransformerMixin
+
+#Definimos el número de índice de las varaibles para el transformador
+tweet_ix, reply_ix, retweet_ix, like_ix, quote_ix, follower_ix, friend_ix, creation_ix = 2, 3, 4, 5, 6, 7, 8, 9 
+#Creamos una clase para hacer atributos nuevos a nuestro data frame
+class CombinedAttributersAdder(BaseEstimator, TransformerMixin):
+    def __init__(self, total_interactions = True, character_len = True, time_plataform = True ):
+        self.total_interactions = total_interactions
+        self.character_len = character_len
+        self.time_plataform = time_plataform
+    #Declaramos este método para que nuestra clase funcione como un transformador
+    def fit(self, X , y = None):
+        return self
+
+    
+
+
+
+
+
+
+
+
+
 
 
 #Tomamos las opciones.
@@ -59,7 +81,7 @@ for train_index, test_index in split.split(cleaned_data, cleaned_data["followers
  strat_test_set = cleaned_data.loc[test_index]
 
 #Veamos cuantas muestras tenemos por categoría en el ingreso medio.
-print(strat_test_set["followers_cat"].value_counts()) 
+#print(strat_test_set["followers_cat"].value_counts()) 
 
 #Eliminamos la categoría que acabamos de crear de nuestros data sets.
 for item in (strat_test_set, strat_train_set):
