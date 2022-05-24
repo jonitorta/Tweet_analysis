@@ -25,15 +25,15 @@ class CombinedAttributersAdder(BaseEstimator, TransformerMixin):
         return self
     
     def transform(self, X, y= None):
-        
+        new_frame = X
         #En esta parte hacemos la lista con el número total de interacciones
         if self.add_total_interactions:
             total_interactions = X[:, reply_ix] + X[:, retweet_ix] + X[:, like_ix] + X[:, quote_ix]
-            new_frame = np.c_[X,total_interactions]
+            new_frame = np.c_[new_frame, total_interactions]
         #En esta parte contamos el número de palabras y las guardamos ese número en una lista
         if self.add_total_words :
             total_words =  []
-            print(len(X[:, tweet_ix]))
+            
             for tweets_tex in X[:, tweet_ix]:
                 word_list = tweets_tex.split()
                 total_words.append( len(word_list) )
@@ -134,14 +134,21 @@ num_cleaned_data = cleaned_data.drop(["Date", "User", "Tweet", "Account creation
 
 #Pongo falso en total interactions ya que ya las agrege de manera manual, las agregé en el transformador solo para prácticar.
 num_pipeline = Pipeline([
-( "attribs_adder", CombinedAttributersAdder(add_total_interactions=False) ),
-("std_scaler", StandardScaler() )
+( "attribs_adder", CombinedAttributersAdder(add_total_interactions=False, add_time_plataform=False, add_total_words=False) ),
+("std_scaler", StandardScaler() ) #Checar mas a profundidad que hace esto.
+])
+cat_pipleline = Pipeline([
+    ("attribs_adder", CombinedAttributersAdder(add_total_interactions=False, add_time_plataform=True, add_total_words=True))
 ])
 
 num_attr = list(num_cleaned_data)
 cat_attr = ["Date", "User", "Tweet", "Account creation"]
 
+full_pipeline = ColumnTransformer([
+    ("num", num_pipeline, num_attr),
+    ("cat", cat_pipleline, cat_attr)
+])
 
-
+prepared_data = full_pipeline.fit(cleaned_data)
 
 pass
