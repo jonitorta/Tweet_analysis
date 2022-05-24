@@ -1,4 +1,3 @@
-from email.quoprimime import quote
 import pandas as pd
 import numpy as np
 from tweet_scrapper import Tweet_analysis
@@ -8,6 +7,10 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.base import BaseEstimator, TransformerMixin
 from datetime import datetime, tzinfo
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.compose import ColumnTransformer
+
 
 #Asignamos el número de índice de las varaibles para el transformador
 tweet_ix, reply_ix, retweet_ix, like_ix, quote_ix, follower_ix, friend_ix, creation_ix = 2, 3, 4, 5, 6, 7, 8, 9 
@@ -125,10 +128,19 @@ Total_interactions = strat_train_set["Total interactions"].copy()
 #Hacemos un data frame con solo valores numéricos.
 num_cleaned_data = cleaned_data.drop(["Date", "User", "Tweet", "Account creation"], axis = 1)
 
+#Ahora  tenemos nuestros atributos nuevos agregados.
+#attr_adder = CombinedAttributersAdder(add_total_interactions=True,add_time_plataform=True,add_total_words=True)
+#data_extra_attr = attr_adder.transform(cleaned_data.values)
 
+#Pongo falso en total interactions ya que ya las agrege de manera manual, las agregé en el transformador solo para prácticar.
+num_pipeline = Pipeline([
+( "attribs_adder", CombinedAttributersAdder(add_total_interactions=False) ),
+("std_scaler", StandardScaler() )
+])
 
-attr_adder = CombinedAttributersAdder(add_total_interactions=True,add_time_plataform=True,add_total_words=True)
-data_extra_attr = attr_adder.transform(cleaned_data.values)
+num_attr = list(num_cleaned_data)
+cat_attr = ["Date", "User", "Tweet", "Account creation"]
+
 
 
 
