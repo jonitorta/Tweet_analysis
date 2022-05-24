@@ -25,16 +25,17 @@ class CombinedAttributersAdder(BaseEstimator, TransformerMixin):
         return self
     
     def transform(self, X, y= None):
-        new_frame = X
+        
+        new_frame = X.copy()
         #En esta parte hacemos la lista con el número total de interacciones
         if self.add_total_interactions:
-            total_interactions = X[:, reply_ix] + X[:, retweet_ix] + X[:, like_ix] + X[:, quote_ix]
+            total_interactions = X["Reply count"] + X["Retweet count"] + X["Like count"] + X["Quote count"]
             new_frame = np.c_[new_frame, total_interactions]
         #En esta parte contamos el número de palabras y las guardamos ese número en una lista
         if self.add_total_words :
             total_words =  []
             
-            for tweets_tex in X[:, tweet_ix]:
+            for tweets_tex in X["Tweet"]:
                 word_list = tweets_tex.split()
                 total_words.append( len(word_list) )
             new_frame = np.c_[new_frame, total_words]
@@ -43,7 +44,7 @@ class CombinedAttributersAdder(BaseEstimator, TransformerMixin):
         #En esta parte contamos el tiempo en días desde la creación de la cuenta hasta el día de hoy.
         if self.add_time_plataform:
             today = datetime.now()
-            creation_date = X[:, creation_ix]
+            creation_date = X["Account creation"]
             days = []
             for dates in creation_date:
                 time_up = today - dates.replace(tzinfo=None)
@@ -128,6 +129,8 @@ Total_interactions = strat_train_set["Total interactions"].copy()
 #Hacemos un data frame con solo valores numéricos.
 num_cleaned_data = cleaned_data.drop(["Date", "User", "Tweet", "Account creation"], axis = 1)
 
+print(cleaned_data.iloc[:, creation_ix][4684])
+
 #Ahora  tenemos nuestros atributos nuevos agregados.
 #attr_adder = CombinedAttributersAdder(add_total_interactions=True,add_time_plataform=True,add_total_words=True)
 #data_extra_attr = attr_adder.transform(cleaned_data.values)
@@ -135,7 +138,7 @@ num_cleaned_data = cleaned_data.drop(["Date", "User", "Tweet", "Account creation
 #Pongo falso en total interactions ya que ya las agrege de manera manual, las agregé en el transformador solo para prácticar.
 num_pipeline = Pipeline([
 ( "attribs_adder", CombinedAttributersAdder(add_total_interactions=False, add_time_plataform=False, add_total_words=False) ),
-("std_scaler", StandardScaler() ) #Checar mas a profundidad que hace esto.
+#("std_scaler", StandardScaler() ) #Checar mas a profundidad que hace esto.
 ])
 cat_pipleline = Pipeline([
     ("attribs_adder", CombinedAttributersAdder(add_total_interactions=False, add_time_plataform=True, add_total_words=True))
@@ -149,6 +152,6 @@ full_pipeline = ColumnTransformer([
     ("cat", cat_pipleline, cat_attr)
 ])
 
-prepared_data = full_pipeline.fit(cleaned_data)
+prepared_data = full_pipeline.fit_transform(cleaned_data)
 
 pass
