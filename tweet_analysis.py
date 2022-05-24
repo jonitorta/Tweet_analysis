@@ -1,3 +1,4 @@
+from matplotlib.cm import get_cmap
 import pandas as pd
 import numpy as np
 from tweet_scrapper import Tweet_analysis
@@ -29,34 +30,46 @@ if not path.exists(file_name):
 
 #Creamos nuestro data frame.
 data = pd.read_pickle(file_name)
+#Como en esta base de datos tenemos None y nos nans tenemos que remplazarlos.
 data['Account followers'].replace("None", np.nan, inplace=True)
-data.dropna()
 
-data.info()
+
 
 #Separamos los datos del entrenamiento de los del testeo.
 instances = len(data)
 train_set = data.iloc[0 : int(instances*.8)]
 test_set = data.iloc[int(instances*.8):]
 
-#Veamos como se distribuyen nuestros datos
-resume_data = data.describe()
-
 #Creamos categorias para el número de followers
 data["followers_cat"] = pd.cut( data["Account followers"] ,
                                 bins = [0.0, 100. ,1000. ,10000. ,100000. ,np.inf ],
                                 labels = [1, 2, 3, 4, 5 ])
+#Quitamos las columnas con nans y reseteamos los indices. Buscar otro tratamiento PENDIENTE
+cleaned_data=data.dropna(subset=["followers_cat"]).reset_index(drop = True )
+cleaned_data.info()
 
-data.dropna(subset=["followers_cat"], inplace=True)
-data = data.reset_index(drop = True )
-data.describe()
 
-#Distribuyamos los datos de manera uniforme segund los seguidores.
+#Distribuyamos los datos de manera uniforme según los seguidores.
 split = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=25)
-for train_index, test_index in split.split(data, data["followers_cat"]):
- strat_train_set = data.loc[train_index]
- strat_test_set = data.loc[test_index]
+for train_index, test_index in split.split(cleaned_data, cleaned_data["followers_cat"]):
+ strat_train_set = cleaned_data.loc[train_index]
+ strat_test_set = cleaned_data.loc[test_index]
+
+#Eliminamos la categoría que acabamos de crear de nuestros indices
+#para el entrenamiento.
+for index in (strat_test_set, strat_train_set):
+    index.drop("followers_cat",axis = 1 , inplace = True)
+
+#Creamos una variable que sea el número de interacciones con el tweet.
+cleaned_data["Total interactions"] = cleaned_data["Quote count"] + cleaned_data["Reply count"] + cleaned_data["Retweet count"] + cleaned_data["Like count"]
+
+corr_matrix = cleaned_data.corr()
+#Para ver la correlación entre las interacciones y otras cantidades que tenemos podemos quitar el # de la linea inferior.
+print(corr_matrix["Total interactions"].sort_values(ascending = False))
 
 
+cleaned_data.plot(kind = "scatter", x = "followers_cat", y = "Total interactions",
+                  alpha = 0.4 , cmap = plt.get_cmap("jet"), c = "Account followers", colorbar = True )
+plt.show()
 
 pass
