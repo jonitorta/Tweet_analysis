@@ -6,10 +6,12 @@ from os import path
 import matplotlib.pyplot as plt
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.base import BaseEstimator, TransformerMixin
-from datetime import datetime, tzinfo
+from datetime import datetime
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.compose import ColumnTransformer
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
 
 
  
@@ -124,7 +126,7 @@ plt.show()
 #Aquí copiamos el dataset de prueba sin el total de interacciones que es lo que queremos predecir
 cleaned_data = strat_train_set.drop("Total interactions", axis = 1)
 #Guardamos el número de interacciones en una lista.
-Total_interactions = strat_train_set["Total interactions"].copy()
+total_interactions = strat_train_set["Total interactions"].copy()
 #Hacemos un data frame con solo valores numéricos.
 num_cleaned_data = cleaned_data.drop(["Date", "User", "Tweet", "Account creation"], axis = 1)
 
@@ -135,18 +137,42 @@ num_pipeline = Pipeline([
 ( "attribs_adder", CombinedAttributersAdder(add_total_interactions=False, add_time_plataform=False, add_total_words=False) ),
 ("std_scaler", StandardScaler() ) #Checar mas a profundidad que hace esto.
 ])
+#Creamos otra pipeline para los atributos categóricos.
 cat_pipleline = Pipeline([
     ("attribs_adder", CombinedAttributersAdder(add_total_interactions=False, add_time_plataform=True, add_total_words=True))
 ])
 
 num_attr = list(num_cleaned_data)
 cat_attr = ["Date", "User", "Tweet", "Account creation"]
-
+#Definimos la transformación aplicando ambas pipelines.
 full_pipeline = ColumnTransformer([
     ("num", num_pipeline, num_attr),
     ("cat", cat_pipleline, cat_attr)
 ])
-
+#Hacemos la transformación de todo nuestro data frame
 prepared_data = full_pipeline.fit_transform(cleaned_data)
+#Declaramos una regresión linearl
+lin_reg = LinearRegression()
+#Para la regresión lineal solo usaremos en este caso las variables numéricas.
+num_prepared_data = prepared_data[ :,[0,1,2,3,-2,-1] ]
+#Hacemos el fit.
+lin_reg.fit(num_prepared_data, total_interactions )
+
+some_data = cleaned_data.iloc[:7]
+some_labels = total_interactions.iloc[:7]
+some_data_prepared = full_pipeline.transform(some_data)
+some_num_prepared_data = some_data_prepared[ :,[0,1,2,3,-2,-1] ]
+
+print("Predictions:", lin_reg.predict(some_num_prepared_data))
+print("Labels:", list(some_labels))
+
+interactions_prediction = lin_reg.predict(num_prepared_data)
+lin_mse = mean_squared_error(total_interactions, interactions_prediction)
+lin_rmse = np.sqrt(lin_mse)
+print(lin_rmse)
+
+
+
+
 
 pass
