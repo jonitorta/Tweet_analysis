@@ -48,6 +48,9 @@ data["followers_cat"] = pd.cut( data["Account followers"] ,
 cleaned_data=data.dropna(subset=["followers_cat"]).reset_index(drop = True )
 cleaned_data.info()
 
+#Creamos una variable que sea el número de interacciones con el tweet.
+cleaned_data["Total interactions"] = cleaned_data["Quote count"] + cleaned_data["Reply count"] + cleaned_data["Retweet count"] + cleaned_data["Like count"]
+
 
 #Distribuyamos los datos de manera uniforme según los seguidores.
 split = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=25)
@@ -55,21 +58,28 @@ for train_index, test_index in split.split(cleaned_data, cleaned_data["followers
  strat_train_set = cleaned_data.loc[train_index]
  strat_test_set = cleaned_data.loc[test_index]
 
-#Eliminamos la categoría que acabamos de crear de nuestros indices
-#para el entrenamiento.
-for index in (strat_test_set, strat_train_set):
-    index.drop("followers_cat",axis = 1 , inplace = True)
+#Veamos cuantas muestras tenemos por categoría en el ingreso medio.
+print(strat_test_set["followers_cat"].value_counts()) 
 
-#Creamos una variable que sea el número de interacciones con el tweet.
-cleaned_data["Total interactions"] = cleaned_data["Quote count"] + cleaned_data["Reply count"] + cleaned_data["Retweet count"] + cleaned_data["Like count"]
+#Eliminamos la categoría que acabamos de crear de nuestros data sets.
+for item in (strat_test_set, strat_train_set):
+    item.drop("followers_cat", axis = 1 , inplace = True)
+
 
 corr_matrix = cleaned_data.corr()
 #Para ver la correlación entre las interacciones y otras cantidades que tenemos podemos quitar el # de la linea inferior.
-print(corr_matrix["Total interactions"].sort_values(ascending = False))
+#print(corr_matrix["Total interactions"].sort_values(ascending = False))
 
-
+#Comp podemos ver en esta gráfica parece que mientras mas followers mas interacciones tienen los tweets.
 cleaned_data.plot(kind = "scatter", x = "followers_cat", y = "Total interactions",
                   alpha = 0.4 , cmap = plt.get_cmap("jet"), c = "Account followers", colorbar = True )
 plt.show()
+
+#Aquí copiamos el dataset de prueba sin el total de interacciones que es lo que queremos predecir
+cleaned_data = strat_train_set.drop("Total interactions", axis = 1)
+#Guardamos el número de interacciones en una lista.
+Total_interactions = strat_train_set["Total interactions"].copy()
+#Hacemos un data frame con solo valores numéricos.
+num_cleaned_data = cleaned_data.drop(["Date", "User", "Tweet", "Account creation"], axis = 1)
 
 pass
