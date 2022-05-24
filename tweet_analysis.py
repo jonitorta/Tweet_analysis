@@ -12,8 +12,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.compose import ColumnTransformer
 
 
-#Asignamos el número de índice de las varaibles para el transformador
-tweet_ix, reply_ix, retweet_ix, like_ix, quote_ix, follower_ix, friend_ix, creation_ix = 2, 3, 4, 5, 6, 7, 8, 9 
+ 
 #Creamos una clase para hacer atributos nuevos a nuestro data frame
 class CombinedAttributersAdder(BaseEstimator, TransformerMixin):
     def __init__(self, add_total_interactions = True, add_total_words = True, add_time_plataform = True ):
@@ -129,16 +128,12 @@ Total_interactions = strat_train_set["Total interactions"].copy()
 #Hacemos un data frame con solo valores numéricos.
 num_cleaned_data = cleaned_data.drop(["Date", "User", "Tweet", "Account creation"], axis = 1)
 
-print(cleaned_data.iloc[:, creation_ix][4684])
 
-#Ahora  tenemos nuestros atributos nuevos agregados.
-#attr_adder = CombinedAttributersAdder(add_total_interactions=True,add_time_plataform=True,add_total_words=True)
-#data_extra_attr = attr_adder.transform(cleaned_data.values)
 
 #Pongo falso en total interactions ya que ya las agrege de manera manual, las agregé en el transformador solo para prácticar.
 num_pipeline = Pipeline([
 ( "attribs_adder", CombinedAttributersAdder(add_total_interactions=False, add_time_plataform=False, add_total_words=False) ),
-#("std_scaler", StandardScaler() ) #Checar mas a profundidad que hace esto.
+("std_scaler", StandardScaler() ) #Checar mas a profundidad que hace esto.
 ])
 cat_pipleline = Pipeline([
     ("attribs_adder", CombinedAttributersAdder(add_total_interactions=False, add_time_plataform=True, add_total_words=True))
