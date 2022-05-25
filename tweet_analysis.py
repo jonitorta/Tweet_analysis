@@ -172,8 +172,11 @@ lin_mse = mean_squared_error(total_followers, interactions_prediction)
 lin_rmse = np.sqrt(lin_mse)
 print(lin_rmse)
 
-
-
+from sklearn.model_selection import cross_val_score
+scores = cross_val_score(lin_reg, num_prepared_data, total_followers,
+ scoring="neg_mean_squared_error", cv=10)
+tree_rmse_scores = np.sqrt(-scores)
+print(tree_rmse_scores)
 
 
 pass
