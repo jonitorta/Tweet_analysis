@@ -88,45 +88,46 @@ instances = len(data)
 train_set = data.iloc[0 : int(instances*.8)]
 test_set = data.iloc[int(instances*.8):]
 
-#Creamos categorias para el número de followers
-data["followers_cat"] = pd.cut( data["Account followers"] ,
-                                bins = [0.0, 100. ,1000. ,10000. ,100000. ,np.inf ],
-                                labels = [1, 2, 3, 4, 5 ])
-#Quitamos las columnas con nans y reseteamos los indices. Buscar otro tratamiento PENDIENTE
-cleaned_data=data.dropna(subset=["followers_cat"]).reset_index(drop = True )
-cleaned_data.info()
 
 #Creamos una variable que sea el número de interacciones con el tweet.
-cleaned_data["Total interactions"] = cleaned_data["Quote count"] + cleaned_data["Reply count"] + cleaned_data["Retweet count"] + cleaned_data["Like count"]
+data["Total interactions"] = data["Quote count"] + data["Reply count"] + data["Retweet count"] + data["Like count"]
+
+#Creamos categorias para el impacto del tweet
+data["Impact"] = pd.cut( data["Total interactions"] ,
+                                bins = [-np.inf, 100. ,1000. ,10000. ,100000. ,np.inf ],
+                                labels = [1, 2, 3, 4, 5 ])
+#Quitamos las columnas con nans y reseteamos los indices. Buscar otro tratamiento PENDIENTE
+cleaned_data=data.dropna(subset=["Account followers"]).reset_index(drop = True )
+cleaned_data.info()
 
 
-#Distribuyamos los datos de manera uniforme según los seguidores.
+#Distribuyamos los datos de manera uniforme según el impacto del tweet.
 split = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=25)
-for train_index, test_index in split.split(cleaned_data, cleaned_data["followers_cat"]):
+for train_index, test_index in split.split(cleaned_data, cleaned_data["Impact"]):
  strat_train_set = cleaned_data.loc[train_index]
  strat_test_set = cleaned_data.loc[test_index]
 
-#Veamos cuantas muestras tenemos por categoría en el ingreso medio.
-#print(strat_test_set["followers_cat"].value_counts()) 
+#Veamos cuantas muestras tenemos por categoría
+#print(strat_test_set["Impact"].value_counts()) 
 
 #Eliminamos la categoría que acabamos de crear de nuestros data sets.
 for item in (strat_test_set, strat_train_set):
-    item.drop("followers_cat", axis = 1 , inplace = True)
+    item.drop("Impact", axis = 1 , inplace = True)
 
 
 corr_matrix = cleaned_data.corr()
 #Para ver la correlación entre las interacciones y otras cantidades que tenemos podemos quitar el # de la linea inferior.
 #print(corr_matrix["Total interactions"].sort_values(ascending = False))
 
-#Comp podemos ver en esta gráfica parece que mientras mas followers mas interacciones tienen los tweets.
-cleaned_data.plot(kind = "scatter", x = "followers_cat", y = "Total interactions",
-                  alpha = 0.4 , cmap = plt.get_cmap("jet"), c = "Account followers", colorbar = True )
+#Veamos el impacto de los tweets segun el número de followers.
+cleaned_data.plot(kind = "scatter", x = "Account followers", y = "Impact",
+                  alpha = 0.4 , cmap = plt.get_cmap("jet"), c = "Account friends", colorbar = True )
 plt.show()
 
 #Aquí copiamos el dataset de prueba sin el total de interacciones que es lo que queremos predecir
-cleaned_data = strat_train_set.drop("Total interactions", axis = 1)
+cleaned_data = strat_train_set.drop("Account followers", axis = 1)
 #Guardamos el número de interacciones en una lista.
-total_interactions = strat_train_set["Total interactions"].copy()
+total_followers = strat_train_set["Account followers"].copy()
 #Hacemos un data frame con solo valores numéricos.
 num_cleaned_data = cleaned_data.drop(["Date", "User", "Tweet", "Account creation"], axis = 1)
 
@@ -135,7 +136,7 @@ num_cleaned_data = cleaned_data.drop(["Date", "User", "Tweet", "Account creation
 #Pongo falso en total interactions ya que ya las agrege de manera manual, las agregé en el transformador solo para prácticar.
 num_pipeline = Pipeline([
 ( "attribs_adder", CombinedAttributersAdder(add_total_interactions=False, add_time_plataform=False, add_total_words=False) ),
-("std_scaler", StandardScaler() ) #Checar mas a profundidad que hace esto.
+("std_scaler", StandardScaler() ) #Estandarizamos que es restar la media y dividir por la desviación estandar.
 ])
 #Creamos otra pipeline para los atributos categóricos.
 cat_pipleline = Pipeline([
@@ -156,10 +157,10 @@ lin_reg = LinearRegression()
 #Para la regresión lineal solo usaremos en este caso las variables numéricas.
 num_prepared_data = prepared_data[ :,[0,1,2,3,-2,-1] ]
 #Hacemos el fit.
-lin_reg.fit(num_prepared_data, total_interactions )
+lin_reg.fit(num_prepared_data, total_followers )
 
 some_data = cleaned_data.iloc[:7]
-some_labels = total_interactions.iloc[:7]
+some_labels = total_followers.iloc[:7]
 some_data_prepared = full_pipeline.transform(some_data)
 some_num_prepared_data = some_data_prepared[ :,[0,1,2,3,-2,-1] ]
 
@@ -167,7 +168,7 @@ print("Predictions:", lin_reg.predict(some_num_prepared_data))
 print("Labels:", list(some_labels))
 
 interactions_prediction = lin_reg.predict(num_prepared_data)
-lin_mse = mean_squared_error(total_interactions, interactions_prediction)
+lin_mse = mean_squared_error(total_followers, interactions_prediction)
 lin_rmse = np.sqrt(lin_mse)
 print(lin_rmse)
 
